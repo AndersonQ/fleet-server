@@ -33,7 +33,7 @@ var (
 
 var AuthKey = http.CanonicalHeaderKey("Authorization")
 
-// APIKetMetadata tracks Metadata associated with an APIKey.
+// APIKeyMetadata tracks Metadata associated with an APIKey.
 type APIKeyMetadata struct {
 	ID              string
 	Metadata        Metadata
@@ -56,13 +56,12 @@ func Read(ctx context.Context, client *elasticsearch.Client, id string, withOwne
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request to elasticsearch failed: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		err = errors.Wrap(ErrAPIKeyNotFound, res.String())
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", res.String(), ErrAPIKeyNotFound)
 	}
 
 	type APIKeyResponse struct {
@@ -77,7 +76,8 @@ func Read(ctx context.Context, client *elasticsearch.Client, id string, withOwne
 	var resp GetAPIKeyResponse
 	d := json.NewDecoder(res.Body)
 	if err = d.Decode(&resp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"could not decode elasticsearch GetAPIKeyResponse: %w", err)
 	}
 
 	if len(resp.APIKeys) == 0 {

@@ -30,7 +30,7 @@ const testFleetRoles = `
 }
 `
 
-func TestRead(t *testing.T) {
+func TestRead_existingKey(t *testing.T) {
 	ctx, cn := context.WithCancel(context.Background())
 	defer cn()
 
@@ -44,10 +44,6 @@ func TestRead(t *testing.T) {
 		t.Fatal(err)
 	}
 
-<<<<<<< HEAD
-	// Try to get the key that doesn't exist, expect ErrApiKeyNotFound
-	_, err = Read(ctx, es, "0000000000000")
-=======
 	// Create the key
 	agentID := uuid.Must(uuid.NewV4()).String()
 	name := uuid.Must(uuid.NewV4()).String()
@@ -83,14 +79,29 @@ func TestRead(t *testing.T) {
 		t.Error(diff)
 	}
 
-	// Try to get the key that doesn't exists, expect ErrApiKeyNotFound
-	_, err = Read(ctx, es, "0000000000000", false)
->>>>>>> 46ac14bafa6a52366ca2ef528b2bef18636fc43d
-	if !errors.Is(err, ErrAPIKeyNotFound) {
-		t.Errorf("Unexpected error type: %v", err)
+}
+
+func TestRead_noKey(t *testing.T) {
+	ctx, cn := context.WithCancel(context.Background())
+	defer cn()
+
+	cfg := elasticsearch.Config{
+		Username: "elastic",
+		Password: "changeme",
 	}
 
+	es, err := elasticsearch.NewClient(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Try to get the key that doesn't exist, expect ErrApiKeyNotFound
+	_, err = Read(ctx, es, "0000000000000", false)
+	if !errors.Is(err, ErrAPIKeyNotFound) {
+		t.Errorf("Unexpected error: %v", err)
+	}
 }
+
 func TestCreateAPIKeyWithMetadata(t *testing.T) {
 	tts := []struct {
 		name       string
@@ -132,7 +143,7 @@ func TestCreateAPIKeyWithMetadata(t *testing.T) {
 			}
 
 			// Get the API key and verify that the metadata was saved correctly
-			aKeyMeta, err := Read(ctx, es, apiKey.ID)
+			aKeyMeta, err := Read(ctx, es, apiKey.ID, false)
 			if err != nil {
 				t.Fatal(err)
 			}

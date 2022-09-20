@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/elastic/fleet-server/v7/internal/pkg/bulk"
 	"github.com/elastic/fleet-server/v7/internal/pkg/cache"
 	"github.com/elastic/fleet-server/v7/internal/pkg/config"
@@ -25,7 +27,6 @@ import (
 	"github.com/elastic/fleet-server/v7/internal/pkg/model"
 	"github.com/elastic/fleet-server/v7/internal/pkg/policy"
 	"github.com/elastic/fleet-server/v7/internal/pkg/smap"
-	"github.com/pkg/errors"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
@@ -360,8 +361,8 @@ func (ack *AckT) handlePolicyChange(ctx context.Context, zlog zerolog.Logger, ag
 			zlog,
 			agent.Id,
 			currRev, currCoord,
-			agent.PolicyID, output.APIKeyID, output.PermissionsHash,
-			output.ToRetireAPIKeyIds)
+			agent.PolicyID,
+			output.APIKeyID, output.PermissionsHash, output.ToRetireAPIKeyIds)
 		if err != nil {
 			return err
 		}
